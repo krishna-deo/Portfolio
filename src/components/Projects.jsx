@@ -13,7 +13,6 @@ const MISSIONS = [
     name: 'Full Stack Application',
     description: 'Built a complete web application with frontend, backend, and database integration, focusing on performance, scalability, and clean architecture.',
     tech: ['React.js','Node.js','MongoDB', 'Tailwind'],
-    image: imgSpiderman,
     link: '#',
     blend: 'mix-blend-luminosity brightness-75',
   },
@@ -22,7 +21,6 @@ const MISSIONS = [
     name: 'Web Security Testing Lab',
     description: 'Performed vulnerability assessment on web applications using tools like Burp Suite. Identified issues like SQL Injection, XSS, and insecure authentication flows.',
     tech: ['Burp Suite', 'OWASP Top 10', 'Manual Testing'],
-    image: imgMan,
     link: '#',
     blend: 'mix-blend-luminosity grayscale',
   },
@@ -31,7 +29,6 @@ const MISSIONS = [
     name: 'Project Aegis',
     description: 'Designed and implemented a secure authentication system using JWT, including login/signup validation, token management, and protection against common attacks.',
     tech: ['Node.js', 'JWT', 'MongoDB', 'Express'],
-    image: imgSpiderman,
     link: '#',
     blend: 'mix-blend-overlay brightness-125 saturate-150',
   }

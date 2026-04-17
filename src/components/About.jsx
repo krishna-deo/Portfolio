@@ -107,23 +107,8 @@ export default function About() {
           />
 
           {/* Masked Overlay: Superhero Persona (Vibrant) */}
-          <div 
-            ref={maskRef}
-            className="absolute inset-0 w-full h-full"
-            style={{
-              '--x': '50%',
-              '--y': '50%',
-              // The polygon logic simulates a circular spotlight reveal
-              // For a soft glowing edge, clip-path doesn't support blur inherently, but this acts perfectly as the mask.
-              clipPath: 'circle(15% at var(--x) var(--y))',
-              transition: 'clip-path 0.1s ease-out'
-            }}
-          >
-            <img 
-              src={imgSpiderman} 
-              alt="Hidden Superhero Persona" 
-              className="absolute inset-0 w-full h-full object-cover object-center scale-105 group-hover:scale-110 transition-transform duration-[2s] ease-out"
-            />
+          <div>
+            
             
             {/* Inner spotlight glow matched inside the mask */}
             <div className="absolute inset-0 bg-gradient-radial from-transparent via-black/20 to-black/80" />

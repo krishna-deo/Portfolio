@@ -3,7 +3,7 @@ import * as THREE from 'three';
 import gsap from 'gsap';
 import { vertexShader, fragmentShader } from './HeroShaders';
 
-import imgSpiderman from '../assets/spiderman/20260407_055437.png';
+import imgSpiderman from '../assets/spiderman/1765182374858-Photoroom.png';
 import imgMan from '../assets/man/1765182374858.jpeg';
 
 export default function Hero() {
@@ -75,29 +75,24 @@ export default function Hero() {
     
     uniformRef.current = uniforms;
 
-    Promise.all([
-      textureLoader.loadAsync(imgSpiderman),
-      textureLoader.loadAsync(imgMan)
-    ]).then(([tex1, tex2]) => {
-      // Improve texture visual quality
-      tex1.generateMipmaps = false;
-      tex1.minFilter = THREE.LinearFilter;
-      tex1.magFilter = THREE.LinearFilter;
-      
-      tex2.generateMipmaps = false;
-      tex2.minFilter = THREE.LinearFilter;
-      tex2.magFilter = THREE.LinearFilter;
-      
-      uniforms.uTexture1.value = tex1;
-      uniforms.uTexture2.value = tex2;
-      
-      // Update image resolution based on the first loaded texture's actual dimensions
-      if (tex1.image) {
-        uniforms.uImageResolution.value.set(tex1.image.width, tex1.image.height);
-      }
-      
-      isTexturesLoaded = true;
-    });
+    textureLoader.loadAsync(imgSpiderman).then((tex) => {
+
+  tex.generateMipmaps = false;
+  tex.minFilter = THREE.LinearFilter;
+  tex.magFilter = THREE.LinearFilter;
+
+  uniforms.uTexture1.value = tex;
+
+  if (tex.image) {
+    uniforms.uImageResolution.value.set(
+      tex.image.width,
+      tex.image.height
+    );
+  }
+
+  isTexturesLoaded = true;
+
+});
 
     // 3. Create full-screen plane geometry and shader material
     const geometry = new THREE.PlaneGeometry(2, 2);
@@ -157,33 +152,33 @@ export default function Hero() {
       }
     };
     
-    const onMouseEnter = () => {
-      setIsHovered(true);
-      gsap.to(uniforms.uHovered, {
-        value: 1.0,
-        duration: 1.2,
-        ease: "power3.out"
-      });
-      if(cursorRef.current) {
-         gsap.to(cursorRef.current, { scale: 1, opacity: 1, duration: 0.3 });
-      }
-    };
+    // const onMouseEnter = () => {
+    //   setIsHovered(true);
+    //   gsap.to(uniforms.uHovered, {
+    //     value: 1.0,
+    //     duration: 1.2,
+    //     ease: "power3.out"
+    //   });
+    //   if(cursorRef.current) {
+    //      gsap.to(cursorRef.current, { scale: 1, opacity: 1, duration: 0.3 });
+    //   }
+    // };
     
-    const onMouseLeave = () => {
-      setIsHovered(false);
-      gsap.to(uniforms.uHovered, {
-        value: 0.0,
-        duration: 1.2,
-        ease: "power3.out"
-      });
-      if(cursorRef.current) {
-         gsap.to(cursorRef.current, { scale: 0, opacity: 0, duration: 0.3 });
-      }
-    };
+    // const onMouseLeave = () => {
+    //   setIsHovered(false);
+    //   gsap.to(uniforms.uHovered, {
+    //     value: 0.0,
+    //     duration: 1.2,
+    //     ease: "power3.out"
+    //   });
+    //   if(cursorRef.current) {
+    //      gsap.to(cursorRef.current, { scale: 0, opacity: 0, duration: 0.3 });
+    //   }
+    // };
 
-    container.addEventListener('mousemove', onMouseMove);
-    container.addEventListener('mouseenter', onMouseEnter);
-    container.addEventListener('mouseleave', onMouseLeave);
+    // container.addEventListener('mousemove', onMouseMove);
+    // container.addEventListener('mouseenter', onMouseEnter);
+    // container.addEventListener('mouseleave', onMouseLeave);
 
     // 6. Handle resize
     const onResize = () => {
@@ -217,9 +212,9 @@ export default function Hero() {
     return () => {
       gsap.ticker.remove(renderTick);
       window.removeEventListener('resize', onResize);
-      container.removeEventListener('mousemove', onMouseMove);
-      container.removeEventListener('mouseenter', onMouseEnter);
-      container.removeEventListener('mouseleave', onMouseLeave);
+      // container.removeEventListener('mousemove', onMouseMove);
+      // container.removeEventListener('mouseenter', onMouseEnter);
+      // container.removeEventListener('mouseleave', onMouseLeave);
       container.removeEventListener('touchstart', onTouch);
       container.removeEventListener('touchmove', onTouch);
       
@@ -239,7 +234,7 @@ export default function Hero() {
         className="absolute inset-0 z-0 select-none"
       />
       
-      {/* Custom Cursor / Light Bloom Overlay */}
+      {/* Custom Cursor / Light Bloom Overlay
       <div 
         ref={cursorRef}
         className="fixed top-0 left-0 w-32 h-32 rounded-full pointer-events-none z-20 mix-blend-screen opacity-0 scale-0"
@@ -247,7 +242,7 @@ export default function Hero() {
           background: 'radial-gradient(circle, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0) 70%)',
           transform: 'translate(-50%, -50%)' // Center the glow on the mouse point
         }}
-      />
+      /> */}
       
       {/* Foreground UI Components */}
       <div ref={textRef} className="absolute inset-0 z-10 pointer-events-none flex flex-col justify-center mx-auto w-full max-w-[90rem] px-8 lg:px-16 mt-20">
@@ -264,7 +259,7 @@ export default function Hero() {
             
             <h1 className="text-base md:text-xl lg:text-2xl xl:text-[2.7rem] font-bold tracking-tighter drop-shadow-2xl leading-[1.05] font-sans">
               Building Secure &<br />
-              <span className="text-transparent bg-clip-text bg-gradient-to-r from-gray-200 to-gray-500 font-serif italic font-light pr-4">Scalable Digital Systems</span> <br/>from<br />
+              <span className="text-transparent opacity-80 text-transparent bg-clip-text bg-gradient-to-r from-red-500 to-white font-serif italic font-light pr-4">Scalable Digital Systems</span> <br/>from<br />
               End to End
             </h1>
           </div>
