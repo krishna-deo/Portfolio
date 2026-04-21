@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useRef } from 'react';
 import * as THREE from 'three';
 import gsap from 'gsap';
 import { vertexShader, fragmentShader } from './HeroShaders';
@@ -6,280 +6,277 @@ import { vertexShader, fragmentShader } from './HeroShaders';
 import imgSpiderman from '../assets/spiderman/1765182374858-Photoroom.png';
 
 export default function Hero() {
+
   const containerRef = useRef(null);
-  const cursorRef = useRef(null);
   const textRef = useRef(null);
-  
-  // Create refs to hold things that need cleanup or updates
-  const uniformRef = useRef(null);
-  const mouseTarget = useRef({ x: 0.5, y: 0.5 });
-  const mouseCurrent = useRef({ x: 0.5, y: 0.5 });
-  
-  const [isHovered, setIsHovered] = useState(false);
 
   useEffect(() => {
+
     if (!containerRef.current) return;
 
     const container = containerRef.current;
-    
-    // Initial Hero Entrance Animation (AOS style smooth fade-up)
-    gsap.fromTo(container, 
-      { opacity: 0, y: 80 }, 
-      { opacity: 1, y: 0, duration: 2, ease: "power3.out", delay: 0.1 }
+
+    // Entrance animation
+    gsap.fromTo(
+      container,
+      { opacity: 0, y: 80 },
+      {
+        opacity: 1,
+        y: 0,
+        duration: 2,
+        ease: "power3.out",
+        delay: 0.1
+      }
     );
-    
-    // Text entrance animation (Fade down)
+
     if (textRef.current) {
-      gsap.fromTo(textRef.current,
+      gsap.fromTo(
+        textRef.current,
         { opacity: 0, y: -60 },
-        { opacity: 1, y: 0, duration: 1.5, ease: "power3.out", delay: 0.8 }
+        {
+          opacity: 1,
+          y: 0,
+          duration: 1.5,
+          ease: "power3.out",
+          delay: 0.8
+        }
       );
     }
-    
-    // 1. Setup Three.js Scene
+
+    // THREE scene
     const scene = new THREE.Scene();
-    
-    // We use an orthographic camera to map perfectly to a screen setup
-    const camera = new THREE.OrthographicCamera(-1, 1, 1, -1, 0, 1);
-    
+
+    const camera = new THREE.OrthographicCamera(
+      -1,1,1,-1,0,1
+    );
+
     const renderer = new THREE.WebGLRenderer({
-      alpha: true,
-      antialias: true,
-      powerPreference: 'high-performance'
+      alpha:true,
+      antialias:true
     });
-    
+
     const width = container.clientWidth;
     const height = container.clientHeight;
-    renderer.setSize(width, height);
-    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
-    
-    container.appendChild(renderer.domElement);
 
-    // 2. Load textures
-    const textureLoader = new THREE.TextureLoader();
-    let isTexturesLoaded = false;
-    
-    // Define uniforms up front so they can be mutated
-    const uniforms = {
-      uTexture1: { value: null }, // Spiderman
-      uTexture2: { value: null }, // Man
-      uMouse: { value: new THREE.Vector2(0.5, 0.5) },
-      uHovered: { value: 0.0 }, // 0 to 1 value smoothly handled by GSAP
-      uRadius: { value: 0.25 }, // Reveal radius size
-      uSoftness: { value: 0.15 }, // Softness of the edge
-      uScale: { value: 0.05 }, // Scale zoom amount
-      uResolution: { value: new THREE.Vector2(width, height) },
-      uImageResolution: { value: new THREE.Vector2(1920, 1080) } // Assuming 16:9 for default
-    };
-    
-    uniformRef.current = uniforms;
+    renderer.setSize(width,height);
 
-    textureLoader.loadAsync(imgSpiderman).then((tex) => {
-
-  tex.generateMipmaps = false;
-  tex.minFilter = THREE.LinearFilter;
-  tex.magFilter = THREE.LinearFilter;
-
-  uniforms.uTexture1.value = tex;
-
-  if (tex.image) {
-    uniforms.uImageResolution.value.set(
-      tex.image.width,
-      tex.image.height
+    renderer.setPixelRatio(
+      Math.min(window.devicePixelRatio,2)
     );
-  }
 
-  isTexturesLoaded = true;
+    container.appendChild(
+      renderer.domElement
+    );
 
-});
+    // Uniforms
+    const uniforms = {
 
-    // 3. Create full-screen plane geometry and shader material
-    const geometry = new THREE.PlaneGeometry(2, 2);
-    const material = new THREE.ShaderMaterial({
-      vertexShader,
-      fragmentShader,
-      uniforms
+      uTexture1:{
+        value:null
+      },
+
+      uResolution:{
+        value:new THREE.Vector2(
+          width,
+          height
+        )
+      },
+
+      uImageResolution:{
+        value:new THREE.Vector2(
+          1920,
+          1080
+        )
+      }
+
+    };
+
+    // Load image
+    const textureLoader =
+      new THREE.TextureLoader();
+
+    let isLoaded=false;
+
+    textureLoader
+    .loadAsync(imgSpiderman)
+    .then((tex)=>{
+
+      tex.generateMipmaps=false;
+
+      tex.minFilter=
+      THREE.LinearFilter;
+
+      tex.magFilter=
+      THREE.LinearFilter;
+
+      uniforms.uTexture1.value=tex;
+
+      if(tex.image){
+        uniforms
+        .uImageResolution
+        .value
+        .set(
+          tex.image.width,
+          tex.image.height
+        );
+      }
+
+      isLoaded=true;
+
     });
 
-    const mesh = new THREE.Mesh(geometry, material);
+    // Shader material
+    const geometry =
+      new THREE.PlaneGeometry(2,2);
+
+    const material =
+      new THREE.ShaderMaterial({
+        vertexShader,
+        fragmentShader,
+        uniforms
+      });
+
+    const mesh =
+      new THREE.Mesh(
+        geometry,
+        material
+      );
+
     scene.add(mesh);
 
-    // 4. GSAP Ticker for render loop and smooth lerping
-    const renderTick = () => {
-      if (!isTexturesLoaded) return;
-      
-      // Lerp the mouse coordinates smoothly
-      mouseCurrent.current.x = gsap.utils.interpolate(mouseCurrent.current.x, mouseTarget.current.x, 0.1);
-      mouseCurrent.current.y = gsap.utils.interpolate(mouseCurrent.current.y, mouseTarget.current.y, 0.1);
-      
-      uniforms.uMouse.value.set(mouseCurrent.current.x, mouseCurrent.current.y);
-      
-      // Also update DOM custom cursor position if needed
-      if(cursorRef.current) {
-        gsap.set(cursorRef.current, {
-           x: mouseCurrent.current.x * width,
-           y: mouseCurrent.current.y * height, // using normalized, so 0 top wait...
-           // Actually threejs UV y is 0 bottom, 1 top. But our uMouse is updated below. Let's fix cursor DOM below.
-        });
-      }
+    // Render loop
+    const renderTick=()=>{
 
-      renderer.render(scene, camera);
+      if(!isLoaded) return;
+
+      renderer.render(
+        scene,
+        camera
+      );
+
     };
-    
+
     gsap.ticker.add(renderTick);
 
-    // 5. Setup interaction event handlers
-    const onMouseMove = (e) => {
-      const rect = container.getBoundingClientRect();
-      const x = (e.clientX - rect.left) / width;
-      // In Three.js UV space, Y=0 is bottom, Y=1 is top.
-      const y = 1.0 - ((e.clientY - rect.top) / height);
-      
-      mouseTarget.current.x = x;
-      mouseTarget.current.y = y;
-      
-      // For DOM cursor, use standard coordinates
-      if(cursorRef.current) {
-        // Just store regular pixel coords in DOM cursor directly for zero latency, 
-        // to have a quick cursor overlay if desired
-        gsap.to(cursorRef.current, {
-            x: e.clientX,
-            y: e.clientY,
-            duration: 0.1,
-            ease: "power2.out"
-        });
-      }
+    // Resize
+    const onResize=()=>{
+
+      const w=
+        container.clientWidth;
+
+      const h=
+        container.clientHeight;
+
+      renderer.setSize(w,h);
+
+      uniforms
+      .uResolution
+      .value
+      .set(w,h);
+
     };
-    
-    // const onMouseEnter = () => {
-    //   setIsHovered(true);
-    //   gsap.to(uniforms.uHovered, {
-    //     value: 1.0,
-    //     duration: 1.2,
-    //     ease: "power3.out"
-    //   });
-    //   if(cursorRef.current) {
-    //      gsap.to(cursorRef.current, { scale: 1, opacity: 1, duration: 0.3 });
-    //   }
-    // };
-    
-    // const onMouseLeave = () => {
-    //   setIsHovered(false);
-    //   gsap.to(uniforms.uHovered, {
-    //     value: 0.0,
-    //     duration: 1.2,
-    //     ease: "power3.out"
-    //   });
-    //   if(cursorRef.current) {
-    //      gsap.to(cursorRef.current, { scale: 0, opacity: 0, duration: 0.3 });
-    //   }
-    // };
 
-    // container.addEventListener('mousemove', onMouseMove);
-    // container.addEventListener('mouseenter', onMouseEnter);
-    // container.addEventListener('mouseleave', onMouseLeave);
+    window.addEventListener(
+      'resize',
+      onResize
+    );
 
-    // 6. Handle resize
-    const onResize = () => {
-      const w = container.clientWidth;
-      const h = container.clientHeight;
-      renderer.setSize(w, h);
-      uniforms.uResolution.value.set(w, h);
-    };
-    
-    window.addEventListener('resize', onResize);
+    // Cleanup
+    return()=>{
 
-    // Mobile fallback (Tap)
-    const onTouch = (e) => {
-        if(e.touches.length > 0) {
-            const touch = e.touches[0];
-            const rect = container.getBoundingClientRect();
-            mouseTarget.current.x = (touch.clientX - rect.left) / width;
-            mouseTarget.current.y = 1.0 - ((touch.clientY - rect.top) / height);
-            
-            // Toggle hover effect on touch
-            if (!isHovered) {
-                onMouseEnter();
-            }
-        }
-    };
-    
-    container.addEventListener('touchstart', onTouch);
-    container.addEventListener('touchmove', onTouch);
+      gsap.ticker.remove(
+        renderTick
+      );
 
-    // 7. Cleanup
-    return () => {
-      gsap.ticker.remove(renderTick);
-      window.removeEventListener('resize', onResize);
-      // container.removeEventListener('mousemove', onMouseMove);
-      // container.removeEventListener('mouseenter', onMouseEnter);
-      // container.removeEventListener('mouseleave', onMouseLeave);
-      container.removeEventListener('touchstart', onTouch);
-      container.removeEventListener('touchmove', onTouch);
-      
-      container.removeChild(renderer.domElement);
+      window.removeEventListener(
+        'resize',
+        onResize
+      );
+
+      container.removeChild(
+        renderer.domElement
+      );
+
       renderer.dispose();
+
       material.dispose();
+
       geometry.dispose();
-      // NOTE: should realistically dispose textures too 
+
     };
-  }, []);
+
+  },[]);
+
+
 
   return (
     <div className="relative w-screen h-screen overflow-hidden bg-black flex items-center justify-center">
-      {/* Three.js Canvas Container */}
-      <div 
-        ref={containerRef} 
-        className="absolute inset-0 z-0 select-none"
+
+      {/* Three Canvas */}
+      <div
+        ref={containerRef}
+        className="absolute inset-0 z-0"
       />
-      
-      {/* Custom Cursor / Light Bloom Overlay
-      <div 
-        ref={cursorRef}
-        className="fixed top-0 left-0 w-32 h-32 rounded-full pointer-events-none z-20 mix-blend-screen opacity-0 scale-0"
-        style={{
-          background: 'radial-gradient(circle, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0) 70%)',
-          transform: 'translate(-50%, -50%)' // Center the glow on the mouse point
-        }}
-      /> */}
-      
-      {/* Foreground UI Components */}
-      <div ref={textRef} className="absolute inset-0 z-10 pointer-events-none flex flex-col justify-center mx-auto w-full max-w-[90rem] px-8 lg:px-16 mt-20">
-        <div 
-          className="w-full flex flex-col md:flex-row justify-between md:items-end transition-all duration-700 ease-out transform gap-10" 
-          style={{ transform: isHovered ? 'translateY(-20px)' : 'translateY(0px)' }}
-        >
-            
-          {/* Left Side: Intro and Title */}
-          <div className="flex-1 max-w-lg lg:max-w-xl text-left">
-            <p className="text-sm md:text-base text-gray-300 font-medium tracking-widest uppercase mb-6 opacity-90 drop-shadow-md">
+
+      {/* Text */}
+      <div
+        ref={textRef}
+        className="absolute inset-0 z-10 pointer-events-none flex flex-col justify-center mx-auto w-full max-w-[90rem] px-8 lg:px-16 mt-20"
+      >
+
+        <div className="w-full flex flex-col md:flex-row justify-between md:items-end gap-10">
+
+          <div className="flex-1 max-w-lg">
+
+            <p className="text-sm md:text-base text-gray-300 tracking-widest uppercase mb-6">
               Hey, I’m Krishna
             </p>
-            
-            <h1 className="text-base md:text-xl lg:text-2xl xl:text-[2.7rem] font-bold tracking-tighter drop-shadow-2xl leading-[1.05] font-sans">
-              Building Secure &<br />
-              <span className="text-transparent opacity-80 text-transparent bg-clip-text bg-gradient-to-r from-red-500 to-white font-serif italic font-light pr-4">Scalable Digital Systems</span> <br/>from<br />
+
+            <h1 className="text-base md:text-xl lg:text-2xl xl:text-[2.7rem] font-bold leading-[1.05]">
+
+              Building Secure &
+
+              <br />
+
+              <span className="text-transparent bg-clip-text bg-gradient-to-r from-red-500 to-white italic font-light">
+                Scalable Digital Systems
+              </span>
+
+              <br />
+
+              from
+
+              <br />
+
               End to End
+
             </h1>
+
           </div>
-          
-          {/* Right Side: Description and CTA */}
-          <div className=" flex-1 max-w-md text-left md:text-right flex flex-col md:items-end">
-            <p className="w-110 text-lg md:text-xl text-gray-300 drop-shadow-xl font-light tracking-wide leading-relaxed mb-8">
+
+
+          <div className="flex-1 max-w-md md:text-right flex flex-col md:items-end">
+
+            <p className="text-lg md:text-xl text-gray-300 leading-relaxed mb-8">
               I build high-performance web applications focused on security, scalable backend architecture, and seamless user experience.
             </p>
-            
-            <button className="pointer-events-auto px-8 py-4 rounded-full border border-white/30 text-white text-sm tracking-[0.2em] uppercase font-medium hover:bg-white hover:text-black hover:border-white transition-all duration-500 backdrop-blur-sm shadow-xl inline-block">
+
+            <button className="pointer-events-auto px-8 py-4 rounded-full border border-white/30 text-white hover:bg-white hover:text-black transition-all">
               Start a Project
             </button>
+
           </div>
-            
+
         </div>
+
       </div>
-      
-      {/* Overlay border/frame for cinematic effect */}
-      <div className="absolute inset-x-0 top-0 h-16 bg-gradient-to-b from-black/50 to-transparent z-10 pointer-events-none" />
-      <div className="absolute inset-x-0 bottom-0 h-24 bg-gradient-to-t from-black/80 to-transparent z-10 pointer-events-none" />
+
+      {/* cinematic overlays */}
+
+      <div className="absolute inset-x-0 top-0 h-16 bg-gradient-to-b from-black/50 to-transparent z-10" />
+
+      <div className="absolute inset-x-0 bottom-0 h-24 bg-gradient-to-t from-black/80 to-transparent z-10" />
+
     </div>
   );
 }
