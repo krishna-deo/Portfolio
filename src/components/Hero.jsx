@@ -4,7 +4,6 @@ import gsap from 'gsap';
 import { vertexShader, fragmentShader } from './HeroShaders';
 
 import imgSpiderman from '../assets/spiderman/1765182374858-Photoroom.png';
-import imgMan from '../assets/man/1765182374858.jpeg';
 
 export default function Hero() {
   const containerRef = useRef(null);
